@@ -1,0 +1,16 @@
+[
+  {
+    "id": 1,
+    "name": "Moscow",
+    "coordinates": {
+      "x": 10,
+      "y": 20
+    },
+    "creationDate": "2026-03-03T20:00:00",
+    "area": 1000,
+    "population": 12000000,
+    "metersAboveSeaLevel": 150,
+    "agglomeration": 15000000,
+    "government": "DEMOCRACY"
+  }
+]

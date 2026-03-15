@@ -1,0 +1,14 @@
+add
+Paris
+10
+20
+1000
+2000000
+35
+3000000
+DESERT
+IDEOCRACY
+50
+167
+save
+show
