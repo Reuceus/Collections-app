@@ -1,38 +1,53 @@
 package city.manager;
 
 import java.io.*;
-import java.util.Stack;
+import java.util.*;
 import java.util.function.Predicate;
 
 /**
  * Класс InputManager управляет вводом данных из консоли и выполнения скриптов.
  * Позволяет читать строки с консоли или из файлов скриптов в стеке.
+ * Поддерживает проверку рекурсии скриптов и вложенные вызовы.
  */
 public class InputManager {
     private final BufferedReader consoleReader = new BufferedReader(new InputStreamReader(System.in));
     private final Stack<BufferedReader> scriptStack = new Stack<>();
+    private Deque<String> scriptNames = new ArrayDeque<>();
+    private static final int MAX_SCRIPT_DEPTH = 10;
 
     public String readLine() throws IOException {
-        if (!scriptStack.isEmpty()) {
-            String line = scriptStack.peek().readLine();
-            if (line == null) {
-                scriptStack.pop().close();
-                return readLine();
-            }
+        while (true) {
+            if (!scriptStack.isEmpty()) {
+                BufferedReader current = scriptStack.peek();
+                String line = current.readLine();
 
-            System.out.println("> " + line);
-            return line;
+                if (line == null) {
+                    current.close();
+                    scriptStack.pop();
+                    scriptNames.pop();
+                    continue;
+                }
+
+                System.out.println("> " + line);
+                return line;
+            }
+            return consoleReader.readLine();
+        }
+    }
+
+    public void pushScript(String fileName) throws IOException {
+        if (scriptStack.size() >= MAX_SCRIPT_DEPTH) {
+            throw new IllegalStateException(
+                    "Слишком глубокая вложенность скриптов! Максимум: " + MAX_SCRIPT_DEPTH
+            );
         }
 
-        return consoleReader.readLine();
-    }
+        if (scriptNames.contains(fileName)) {
+            throw new IllegalArgumentException("Обнаружена рекурсия скриптов!");
+        }
 
-    public void pushScript(String fileName) throws FileNotFoundException {
         scriptStack.push(new BufferedReader(new FileReader(fileName)));
-    }
-
-    public boolean isScriptRunning(String fileName) {
-        return scriptStack.stream().anyMatch(r -> r.toString().contains(fileName));
+        scriptNames.push(fileName);
     }
 
     public boolean isReadingFromScript() {
@@ -46,9 +61,7 @@ public class InputManager {
 
             if (input == null) throw new IOException("Ввод прерван");
 
-            if (validator.test(input)) {
-                return input;
-            }
+            if (validator.test(input)) return input;
 
             System.out.println(errorMessage);
 
@@ -65,13 +78,10 @@ public class InputManager {
 
             try {
                 int value = Integer.parseInt(input);
+                if (validator.test(value)) return value;
+            } catch (NumberFormatException ignored) {}
 
-                if (validator.test(value)) {
-                    return value;
-                }
-            } catch (NumberFormatException e) {}
             System.out.println(errorMessage);
-
 
             if (isReadingFromScript()) {
                 throw new IllegalArgumentException("Ошибка в скрипте: " + errorMessage);
@@ -86,13 +96,10 @@ public class InputManager {
 
             try {
                 double value = Double.parseDouble(input);
+                if (validator.test(value)) return value;
+            } catch (NumberFormatException ignored) {}
 
-                if (validator.test(value)) {
-                    return value;
-                }
-            } catch (NumberFormatException e) {}
             System.out.println(errorMessage);
-
 
             if (isReadingFromScript()) {
                 throw new IllegalArgumentException("Ошибка в скрипте: " + errorMessage);
@@ -107,13 +114,10 @@ public class InputManager {
 
             try {
                 float value = Float.parseFloat(input);
+                if (validator.test(value)) return value;
+            } catch (NumberFormatException ignored) {}
 
-                if (validator.test(value)) {
-                    return value;
-                }
-            } catch (NumberFormatException e) {}
             System.out.println(errorMessage);
-
 
             if (isReadingFromScript()) {
                 throw new IllegalArgumentException("Ошибка в скрипте: " + errorMessage);

@@ -14,13 +14,12 @@ import java.util.Set;
 public class CommandManager {
     private Map<String, Command> commands = new HashMap<>();
     private boolean running = true;
-    private Set<String> executingScripts = new HashSet<>();
 
     public void register(Command command) {
         commands.put(command.getName(), command);
     }
 
-    public void execute(String input) {
+    public void  execute(String input) {
         if (input == null || input.trim().isEmpty()) {
             return;
         }
@@ -50,15 +49,4 @@ public class CommandManager {
         commands.values().forEach(cmd -> System.out.println(cmd.getName() + " - " + cmd.getDescription()));
     }
 
-    public boolean isScriptRunning(String fileName) {
-        return executingScripts.contains(fileName);
-    }
-
-    public void startScript(String fileName) {
-        executingScripts.add(fileName);
-    }
-
-    public void finishScript(String fileName) {
-        executingScripts.remove(fileName);
-    }
 }
