@@ -7,5 +7,5 @@ package city.commands;
 public interface Command {
     String getName();
     String getDescription();
-    void execute(String[] args);
+    String execute(String[] args, Object obj);
 }

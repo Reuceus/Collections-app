@@ -23,24 +23,17 @@ public class RemoveByIdCommand implements Command{
     }
 
     @Override
-    public void execute(String[] args) {
+    public String execute(String[] args, Object obj) {
         if (args.length == 0) {
-            System.out.println("Укажите id");
-            return;
+            return "Ошибка: не указан id";
         }
 
-        int id;
         try {
-            id = Integer.parseInt(args[0]);
+            int id = Integer.parseInt(args[0]);
+            manager.removeById(id);
+            return "Элемент удалён";
         } catch (NumberFormatException e) {
-            System.out.println("ID должен быть числом");
-            return;
-        }
-
-        if (manager.removeById(id)) {
-            System.out.println("Удалено");
-        } else {
-            System.out.println("Элемент не найден");
+            return "Ошибка: id должен быть числом";
         }
     }
 }

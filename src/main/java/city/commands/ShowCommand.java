@@ -23,7 +23,7 @@ public class ShowCommand implements Command{
     }
 
     @Override
-    public void execute(String[] args) {
-        manager.getAll().forEach(System.out::println);
+    public String execute(String[] args, Object obj) {
+        return manager.show();
     }
 }

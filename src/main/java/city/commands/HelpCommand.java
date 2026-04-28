@@ -24,7 +24,7 @@ public class HelpCommand implements Command{
     }
 
     @Override
-    public void execute(String[] args) {
-        manager.showHelp();
+    public String execute(String[] args, Object obj) {
+        return manager.showHelp();
     }
 }

@@ -1,3 +1,4 @@
+/*
 package city;
 
 import city.manager.*;
@@ -15,6 +16,7 @@ import java.util.Objects;
  * Отвечает за инициализацию коллекции, загрузку данных из файла,
  * регистрацию команд и обработку ввода пользователя.
  */
+/*
 public class Main {
     public static void main(String[] args) {
         String fileName = System.getenv("CITY_FILE");
@@ -41,7 +43,7 @@ public class Main {
         CommandManager commandManager = new CommandManager();
         InputManager inputManager = new InputManager();
 
-        commandManager.register(new AddCommand(collectionManager, inputManager));
+        commandManager.register(new AddCommand(collectionManager));
         commandManager.register(new InfoCommand(collectionManager));
         commandManager.register(new ShowCommand(collectionManager));
         commandManager.register(new RemoveByIdCommand(collectionManager));
@@ -62,10 +64,11 @@ public class Main {
             try {
                 System.out.print("> ");
                 String input = inputManager.readLine();
-                commandManager.execute(input);
+                commandManager.execute(input, );
             } catch (IOException e) {
                 System.out.println("Ошибка ввода");
             }
         }
     }
 }
+ */

@@ -1,11 +1,13 @@
 package city.model;
 
+import java.io.Serializable;
+
 /**
  * Класс Human представляет губернатора города с указанием его возраста и роста.
  * Поле age должно быть больше 0.
  * Поле height должно быть больше 0.
  */
-public class Human {
+public class Human implements Serializable {
     private Integer age; //Значение поля должно быть больше 0
     private int height; //Значение поля должно быть больше 0
 

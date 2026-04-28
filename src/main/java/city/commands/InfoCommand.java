@@ -23,7 +23,7 @@ public class InfoCommand implements Command {
     }
 
     @Override
-    public void execute(String[] args) {
-        System.out.println(manager.getInfo());
+    public String execute(String[] args, Object obj) {
+        return manager.getInfo();
     }
 }

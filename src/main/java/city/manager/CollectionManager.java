@@ -2,10 +2,8 @@ package city.manager;
 
 import city.model.City;
 import city.model.Government;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+
+import java.util.*;
 
 /**
  * Класс CollectionManager управляет коллекцией объектов City,
@@ -56,14 +54,15 @@ public class CollectionManager {
         return null;
     }
 
-    public boolean update(int id, City newCity) {
+    public String update(int id, City newCity) {
         for (int i = 0; i < cities.size(); i++) {
             if (cities.get(i).getId() == id) {
+                newCity.setId(id);
                 cities.set(i, newCity);
-                return true;
+                return "Элемент обновлён";
             }
         }
-        return false;
+        return "Элемент с таким id не найден";
     }
 
     public void removeFirst() {
@@ -76,39 +75,57 @@ public class CollectionManager {
         System.out.println("Первый элемент удален");
     }
 
-    public void shuffle() {
-        Collections.shuffle(cities);
-    }
-
-    public void reorder() {
-        Collections.reverse(cities);
-    }
-
-    public void filterByGovernment(Government government) {
-        boolean found = false;
-        for (City city : cities) {
-            if (city.getGovernment() == government) {
-                System.out.println(city);
-                found = true;
-            }
-        }
-
-        if (!found) {
-            System.out.println("Элементы с таким government не найдены");
-        }
-    }
-
-    public void printDescending() {
+    public String shuffle() {
         if (cities.isEmpty()) {
-            System.out.println("Коллекция пуста");
-            return;
+            return "Коллекция пуста";
         }
 
-        List<City> sorted = new ArrayList<>(cities);
-        sorted.sort(Collections.reverseOrder());
+        Collections.shuffle(cities);
+        return "Коллекция перемешана";
+    }
 
-        for (City city : sorted) {
-            System.out.println(city);
+    public String reorder() {
+        if (cities.isEmpty()) {
+            return "Коллекция пуста";
         }
+
+        Collections.reverse(cities);
+        return "Коллекция развернута";
+    }
+
+    public String filterByGovernment(Government government) {
+        if (cities.isEmpty()) {
+            return "Коллекция пуста";
+        }
+
+        return cities.stream()
+                .filter(c -> c.getGovernment() == government)
+                .map(City::toString)
+                .collect(java.util.stream.Collectors.joining("\n"));
+    }
+
+    public String printDescending() {
+        if (cities.isEmpty()) {
+            return "Коллекция пуста";
+        }
+
+        return cities.stream()
+                .sorted(Comparator.reverseOrder())
+                .map(City::toString)
+                .reduce("", (a, b) -> a + b + "\n");
+    }
+
+    public String show() {
+        if (cities.isEmpty()) {
+            return "Коллекция пуста";
+        }
+
+        StringBuilder sb = new StringBuilder();
+
+        for (City city : cities) {
+            sb.append(city).append("\n");
+        }
+
+        return sb.toString();
     }
 }

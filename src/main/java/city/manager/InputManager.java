@@ -4,15 +4,10 @@ import java.io.*;
 import java.util.*;
 import java.util.function.Predicate;
 
-/**
- * Класс InputManager управляет вводом данных из консоли и выполнения скриптов.
- * Позволяет читать строки с консоли или из файлов скриптов в стеке.
- * Поддерживает проверку рекурсии скриптов и вложенные вызовы.
- */
 public class InputManager {
     private final BufferedReader consoleReader = new BufferedReader(new InputStreamReader(System.in));
     private final Stack<BufferedReader> scriptStack = new Stack<>();
-    private Deque<String> scriptNames = new ArrayDeque<>();
+    private final Deque<String> scriptNames = new ArrayDeque<>();
     private static final int MAX_SCRIPT_DEPTH = 10;
 
     public String readLine() throws IOException {
@@ -22,9 +17,7 @@ public class InputManager {
                 String line = current.readLine();
 
                 if (line == null) {
-                    current.close();
-                    scriptStack.pop();
-                    scriptNames.pop();
+                    popScript();
                     continue;
                 }
 
@@ -48,6 +41,29 @@ public class InputManager {
 
         scriptStack.push(new BufferedReader(new FileReader(fileName)));
         scriptNames.push(fileName);
+    }
+
+    public void popScript() throws IOException {
+        if (!scriptStack.isEmpty()) {
+            BufferedReader reader = scriptStack.pop();
+            reader.close();
+            scriptNames.pop();
+        }
+    }
+
+    public boolean hasNext() {
+        try {
+            if (!scriptStack.isEmpty()) {
+                BufferedReader current = scriptStack.peek();
+                current.mark(1);
+                int c = current.read();
+                current.reset();
+                return c != -1;
+            }
+            return consoleReader.ready();
+        } catch (IOException e) {
+            return false;
+        }
     }
 
     public boolean isReadingFromScript() {

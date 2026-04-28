@@ -23,8 +23,7 @@ public class ExitCommand implements Command{
     }
 
     @Override
-    public void execute(String[] args) {
-        System.out.println("Завершение программы");
-        commandManager.stop();
+    public String execute(String[] args, Object obj) {
+        return "exit";
     }
 }

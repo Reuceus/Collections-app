@@ -23,13 +23,7 @@ public class ReorderCommand implements Command{
     }
 
     @Override
-    public void execute(String[] args) {
-        if (args.length > 0) {
-            System.out.println("Команда не принимает аргументы");
-            return;
-        }
-
-        cm.reorder();
-        System.out.println("Порядок изменен");
+    public String execute(String[] args, Object obj) {
+        return cm.reorder();
     }
 }

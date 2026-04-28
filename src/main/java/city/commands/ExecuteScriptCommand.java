@@ -8,12 +8,7 @@ import java.io.*;
 /**
  * Команда execute_script для чтения и выполнения команд из указанного файла скрипта.
  */
-public class ExecuteScriptCommand implements Command{
-    private final InputManager im;
-
-    public ExecuteScriptCommand(InputManager im) {
-        this.im = im;
-    }
+public class ExecuteScriptCommand implements Command {
 
     @Override
     public String getName() {
@@ -22,20 +17,16 @@ public class ExecuteScriptCommand implements Command{
 
     @Override
     public String getDescription() {
-        return "Cчитать и исполнить скрипт из указанного файла";
+        return "Выполнить скрипт из файла";
     }
 
     @Override
-    public void execute(String[] args) {
-        if (args.length != 1) {
-            System.out.println("Использование: execute_script file_name");
-            return;
+    public String execute(String[] args, Object obj) {
+
+        if (args == null || args.length != 1) {
+            return "Использование: execute_script file_name";
         }
 
-        try {
-            im.pushScript(args[0]);
-        } catch (Exception e) {
-            System.out.println("Ошибка открытия файла");
-        }
+        return "EXEC_SCRIPT:" + args[0];
     }
 }

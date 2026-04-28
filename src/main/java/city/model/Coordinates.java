@@ -1,10 +1,12 @@
 package city.model;
 
+import java.io.Serializable;
+
 /**
  * Класс Coordinates хранит координаты города: x и y.
  * Поле x имеет максимум 959, поле y имеет максимум 332 и не может быть null.
  */
-public class Coordinates {
+public class Coordinates implements Serializable {
     private float x; //Максимальное значение поля: 959
     private Integer y; //Максимальное значение поля: 332, Поле не может быть null
 

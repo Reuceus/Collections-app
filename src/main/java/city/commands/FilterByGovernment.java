@@ -27,21 +27,16 @@ public class FilterByGovernment implements Command{
     }
 
     @Override
-    public void execute(String[] args) {
-        if (args.length != 1) {
-            System.out.println("Использование: filter_by_government government");
-            return;
-        }
-
-        if (cm.getAll().isEmpty()) {
-            System.out.println("Коллекция пуста");
+    public String execute(String[] args, Object obj) {
+        if (args.length == 0) {
+            return "Ошибка: не указан тип правительства";
         }
 
         try {
-            Government gov = Government.valueOf(args[0].toUpperCase());
-            cm.filterByGovernment(gov);
+            Government gov = Government.valueOf(args[0]);
+            return cm.filterByGovernment(gov);
         } catch (IllegalArgumentException e) {
-            System.out.println("Неверное значение government");
+            return "Ошибка: неверное значение government";
         }
     }
 }

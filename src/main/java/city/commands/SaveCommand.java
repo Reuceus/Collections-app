@@ -26,7 +26,8 @@ public class SaveCommand implements Command{
     }
 
     @Override
-    public void execute(String[] args) {
+    public String execute(String[] args, Object obj) {
         fileManager.save(collectionManager.getAll());
+        return "Сохранено";
     }
 }

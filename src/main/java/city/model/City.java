@@ -4,6 +4,7 @@ import city.manager.InputManager;
 import city.utils.IdGenerator;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -11,7 +12,7 @@ import java.util.Date;
  * уникальным идентификатором, названием, координатами, населением,
  * площадью, климатом, формой правления, губернатором и другими параметрами.
  */
-public class City implements Comparable<City> {
+public class City implements Comparable<City>, Serializable {
     private Integer id; //Поле не может быть null, Значение поля должно быть больше 0, Значение этого поля должно быть уникальным, Значение этого поля должно генерироваться автоматически
     private String name; //Поле не может быть null, Строка не может быть пустой
     private Coordinates coordinates; //Поле не может быть null

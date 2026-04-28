@@ -23,13 +23,8 @@ public class ClearCommand implements Command{
     }
 
     @Override
-    public void execute(String[] args) {
-        if(args.length > 0) {
-            System.out.println("Команда не принимает аргументы");
-            return;
-        }
-
+    public String execute(String[] args, Object obj) {
         cm.clear();
-        System.out.println("Коллекция очищена");
+        return "Коллекция очищена";
     }
 }

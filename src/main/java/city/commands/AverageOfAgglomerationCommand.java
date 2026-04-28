@@ -25,15 +25,13 @@ public class AverageOfAgglomerationCommand implements Command{
     }
 
     @Override
-    public void execute(String[] args) {
+    public String execute(String[] args, Object obj) {
         if (args.length > 0) {
-            System.out.println("Команда не принимает аргументы");
-            return;
+            return "Команда не принимает аргументы";
         }
 
         if (cm.getAll().isEmpty()) {
-            System.out.println("Коллекция пуста");
-            return;
+            return "Коллекция пуста";
         }
 
         double sum = 0;
@@ -41,6 +39,6 @@ public class AverageOfAgglomerationCommand implements Command{
             sum += city.getAgglomeration();
         }
 
-        System.out.println("Среднее значение agglomeration: " + sum / cm.getAll().size());
+        return "Среднее значение agglomeration: " + sum / cm.getAll().size();
     }
 }

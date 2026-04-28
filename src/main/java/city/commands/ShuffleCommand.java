@@ -23,17 +23,7 @@ public class ShuffleCommand implements Command{
     }
 
     @Override
-    public void execute(String[] args) {
-        if (args.length > 0) {
-            System.out.println("Команда не принимает аргументов");
-        }
-
-        if (cm.getAll().isEmpty()) {
-            System.out.println("Коллекция пуста");
-        return;
-        }
-
-        cm.shuffle();
-        System.out.println("Коллекция перемешана");
+    public String execute(String[] args, Object obj) {
+        return cm.shuffle();
     }
 }
