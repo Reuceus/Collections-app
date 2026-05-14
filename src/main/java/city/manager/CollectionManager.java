@@ -3,7 +3,11 @@ package city.manager;
 import city.model.City;
 import city.model.Government;
 
+import java.io.File;
 import java.util.*;
+import java.util.stream.Collectors;
+
+import static java.util.Collections.sort;
 
 /**
  * Класс CollectionManager управляет коллекцией объектов City,
@@ -13,20 +17,17 @@ import java.util.*;
 public class CollectionManager {
     private ArrayList<City> cities;
     private Date initializationDate;
+    private final FileManager fileManager;
 
-    public CollectionManager() {
-        cities = new ArrayList<>();
-        initializationDate = new Date();
-    }
-
-    public CollectionManager(ArrayList<City> cities) {
-        this.cities = cities;
-        initializationDate = new Date();
+    public CollectionManager(FileManager fileManager) {
+        this.fileManager = fileManager;
+        this.cities = fileManager.load();
+        this.initializationDate = new Date();
     }
 
     public void add(City city) {
         cities.add(city);
-        Collections.sort(cities);
+        sort();
     }
 
     public boolean removeById(int id) {
@@ -59,20 +60,20 @@ public class CollectionManager {
             if (cities.get(i).getId() == id) {
                 newCity.setId(id);
                 cities.set(i, newCity);
+                this.sort();
                 return "Элемент обновлён";
             }
         }
         return "Элемент с таким id не найден";
     }
 
-    public void removeFirst() {
+    public String removeFirst() {
         if(cities.isEmpty()) {
-            System.out.println("Коллекция пуста");
-            return;
+            return "Коллекция пуста";
         }
 
         cities.remove(0);
-        System.out.println("Первый элемент удален");
+        return "Первый элемент удален";
     }
 
     public String shuffle() {
@@ -120,12 +121,23 @@ public class CollectionManager {
             return "Коллекция пуста";
         }
 
-        StringBuilder sb = new StringBuilder();
+        return cities.stream()
+                .sorted()
+                .map(City::toString)
+                .collect(Collectors.joining("\n"));
+    }
 
-        for (City city : cities) {
-            sb.append(city).append("\n");
+    private void sort() {
+        cities.sort(Comparator.naturalOrder());
+    }
+
+    public String save() {
+        try {
+            sort();
+            fileManager.save(cities);
+            return "Коллекция сохранена";
+        } catch (Exception e) {
+            return "Ошибка сохранения: " + e.getMessage();
         }
-
-        return sb.toString();
     }
 }

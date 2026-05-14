@@ -8,11 +8,9 @@ import city.manager.FileManager;
  */
 public class SaveCommand implements Command{
     private CollectionManager collectionManager;
-    private FileManager fileManager;
 
-    public SaveCommand(CollectionManager cm, FileManager fm) {
+    public SaveCommand(CollectionManager cm) {
         this.collectionManager = cm;
-        this.fileManager = fm;
     }
 
     @Override
@@ -27,7 +25,7 @@ public class SaveCommand implements Command{
 
     @Override
     public String execute(String[] args, Object obj) {
-        fileManager.save(collectionManager.getAll());
+        this.collectionManager.save();
         return "Сохранено";
     }
 }

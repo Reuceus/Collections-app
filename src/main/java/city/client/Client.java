@@ -1,132 +1,220 @@
 package city.client;
 
-import city.model.*;
+import city.manager.InputManager;
 import city.network.Request;
 import city.network.Response;
-import city.manager.InputManager;
 
 import java.io.*;
-import java.net.InetSocketAddress;
-import java.nio.ByteBuffer;
-import java.nio.channels.SocketChannel;
+import java.net.ConnectException;
+import java.net.Socket;
+import java.net.SocketTimeoutException;
+import java.util.Arrays;
+import java.util.Scanner;
 
 public class Client {
-    private City readCity(InputManager inputManager) throws Exception {
-        String name = inputManager.readString("Название: ", s -> !s.trim().isEmpty(), "Ошибка");
 
-        float x = inputManager.readFloat("X: ", p -> p < 960, "Ошибка");
-        int y = inputManager.readInt("Y: ", p -> p < 333, "Ошибка");
-        Coordinates c = new Coordinates(x, y);
+    private final String host;
+    private final int port;
 
-        float area = inputManager.readFloat("Area: ", p -> p > 0, "Ошибка");
-        int population = inputManager.readInt("Population: ", p -> p > 0, "Ошибка");
+    private final Scanner scanner = new Scanner(System.in);
+    private final InputManager inputManager;
 
-        double meters = inputManager.readDouble("Meters: ", p -> true, "Ошибка");
-        double agglomeration = inputManager.readDouble("Agglomeration: ", p -> true, "Ошибка");
-
-        Climate climate = Climate.valueOf(
-                inputManager.readString("Climate: ", s -> true, "Ошибка")
-        );
-
-        Government government = Government.valueOf(
-                inputManager.readString("Government: ", s -> true, "Ошибка")
-        );
-
-        int age = inputManager.readInt("Age: ", p -> p > 0, "Ошибка");
-        int height = inputManager.readInt("Height: ", p -> p > 0, "Ошибка");
-
-        Human governor = new Human(age, height);
-
-        return new City(name, c, area, population, meters, agglomeration, climate, government, governor);
+    public Client(String host, int port, InputManager inputManager) {
+        this.host = host;
+        this.port = port;
+        this.inputManager = inputManager;
     }
 
     public void start() {
-        InputManager inputManager = new InputManager();
-
+        System.out.println("Клиент запущен");
+        System.out.println("Подключение к серверу: " + host + ":" + port);
+        System.out.println("Введите help для списка команд");
         while (true) {
-            try {
-                System.out.print("> ");
-                String input = inputManager.readLine();
 
-                if (input == null || input.trim().isEmpty()) {
+            try {
+
+                System.out.print("> ");
+
+                String line = scanner.nextLine().trim();
+
+                if (line.isEmpty()) {
                     continue;
                 }
 
-                String[] parts = input.trim().split("\\s+");
+                String[] parts = line.split("\\s+");
+
                 String commandName = parts[0];
 
-                String[] args = new String[Math.max(0, parts.length - 1)];
-                System.arraycopy(parts, 1, args, 0, args.length);
-
-                Request request;
-
-                if (commandName.equals("add") || commandName.equals("update")) {
-                    City city = null;
-
-                    while (city == null) {
-                        try {
-                            city = readCity(inputManager);
-                        } catch (Exception e) {
-                            System.out.println("Ошибка ввода, попробуйте еще раз");
-                        }
-                    }
-
-                    request = new Request(commandName, args, city);
-                } else {
-                    request = new Request(commandName, args, null);
+                if (commandName.equals("exit")) {
+                    System.out.println("Завершение клиента");
+                    break;
                 }
 
-                SocketChannel channel = SocketChannel.open();
-                channel.connect(new InetSocketAddress("localhost", 12345));
-
-                ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                ObjectOutputStream oos = new ObjectOutputStream(bos);
-                oos.writeObject(request);
-                oos.flush();
-
-                byte[] requestBytes = bos.toByteArray();
-                ByteBuffer requestBuffer = ByteBuffer.allocate(4 + requestBytes.length);
-                requestBuffer.putInt(requestBytes.length);
-                requestBuffer.put(requestBytes);
-                requestBuffer.flip();
-
-                while (requestBuffer.hasRemaining()) {
-                    channel.write(requestBuffer);
+                if (commandName.equals("save")) {
+                    System.out.println("Команда save недоступна на клиенте");
+                    continue;
                 }
 
-                ByteBuffer sizeBuffer = ByteBuffer.allocate(4);
-                while (sizeBuffer.hasRemaining()) {
-                    if (channel.read(sizeBuffer) == -1) {
-                        throw new IOException("Сервер закрыл соединение");
-                    }
-                }
-                sizeBuffer.flip();
-                int responseSize = sizeBuffer.getInt();
+                String[] args =
+                        Arrays.copyOfRange(parts, 1, parts.length);
 
-                ByteBuffer responseBuffer = ByteBuffer.allocate(responseSize);
-                while (responseBuffer.hasRemaining()) {
-                    if (channel.read(responseBuffer) == -1) {
-                        throw new IOException("Сервер закрыл соединение");
-                    }
-                }
+                Request request =
+                        buildRequest(commandName, args);
 
-                responseBuffer.flip();
-                byte[] data = new byte[responseBuffer.remaining()];
-                responseBuffer.get(data);
-
-                ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(data));
-                Response response = (Response) ois.readObject();
+                Response response =
+                        sendRequest(request);
 
                 System.out.println(response.getMessage());
 
-                channel.close();
+            } catch (ConnectException e) {
+
+                System.out.println(
+                        "Сервер временно недоступен"
+                );
+
+            } catch (SocketTimeoutException e) {
+
+                System.out.println(
+                        "Сервер не отвечает"
+                );
+
+            } catch (EOFException e) {
+
+                System.out.println(
+                        "Сервер неожиданно закрыл соединение"
+                );
 
             } catch (IOException e) {
-                System.out.println("Ошибка сети: " + e.getMessage());
+
+                System.out.println("Ошибка ввода-вывода: " + e.getMessage());
+
+            } catch (ClassNotFoundException e) {
+
+                System.out.println("Ошибка десериализации ответа");
+
             } catch (Exception e) {
-                e.printStackTrace();
+
+                System.out.println("Ошибка: " + e.getMessage());
             }
         }
     }
-}
 
+    private Request buildRequest(
+            String commandName,
+            String[] args
+    ) throws IOException {
+
+        Object object = null;
+
+        switch (commandName) {
+
+            case "add":
+
+                object = inputManager.readCity();
+                break;
+
+            case "update":
+
+                if (args.length == 0) {
+                    throw new IllegalArgumentException(
+                            "Для команды update необходимо указать id"
+                    );
+                }
+
+                object = inputManager.readCity();
+                break;
+        }
+
+        return new Request(commandName, args, object);
+    }
+
+    private Response sendRequest(Request request)
+            throws IOException, ClassNotFoundException {
+
+        try (Socket socket = new Socket(host, port)) {
+
+            socket.setSoTimeout(10000);
+
+            OutputStream outputStream =
+                    socket.getOutputStream();
+
+            InputStream inputStream =
+                    socket.getInputStream();
+
+            writeObject(outputStream, request);
+
+            Object object =
+                    readObject(inputStream);
+
+            if (!(object instanceof Response)) {
+
+                throw new IOException(
+                        "Получен объект неверного типа: "
+                                + object.getClass().getName()
+                );
+            }
+
+            return (Response) object;
+        }
+    }
+
+    private void writeObject(
+            OutputStream outputStream,
+            Object object
+    ) throws IOException {
+
+        ByteArrayOutputStream byteArrayOutputStream =
+                new ByteArrayOutputStream();
+
+        try (ObjectOutputStream objectOutputStream =
+                     new ObjectOutputStream(
+                             byteArrayOutputStream
+                     )) {
+
+            objectOutputStream.writeObject(object);
+        }
+
+        byte[] data =
+                byteArrayOutputStream.toByteArray();
+
+        DataOutputStream dataOutputStream =
+                new DataOutputStream(outputStream);
+
+        dataOutputStream.writeInt(data.length);
+
+        dataOutputStream.write(data);
+
+        dataOutputStream.flush();
+    }
+
+    private Object readObject(InputStream inputStream)
+            throws IOException, ClassNotFoundException {
+
+        DataInputStream dataInputStream =
+                new DataInputStream(inputStream);
+
+        int objectSize =
+                dataInputStream.readInt();
+
+        if (objectSize <= 0 || objectSize > 10_000_000) {
+
+            throw new IOException(
+                    "Некорректный размер объекта: "
+                            + objectSize
+            );
+        }
+
+        byte[] data =
+                new byte[objectSize];
+
+        dataInputStream.readFully(data);
+
+        try (ObjectInputStream objectInputStream =
+                     new ObjectInputStream(
+                             new ByteArrayInputStream(data)
+                     )) {
+
+            return objectInputStream.readObject();
+        }
+    }
+}

@@ -1,6 +1,8 @@
 package city.manager;
 
 import city.commands.Command;
+import city.network.Request;
+import city.network.Response;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -19,35 +21,43 @@ public class CommandManager {
         commands.put(command.getName(), command);
     }
 
-    public String execute(String commandName, Object obj, String[] args) {
+    public Response execute(Request request) {
+
+        String commandName = request.getCommandName();
 
         if (commandName == null || commandName.trim().isEmpty()) {
-            return "Пустая команда";
+            return new Response("Пустая команда");
         }
 
         Command command = commands.get(commandName);
 
         if (command == null) {
-            return "Неизвестная команда: " + commandName;
+            return new Response("Неизвестная команда: " + commandName);
         }
 
         try {
-            String result = command.execute(args, obj);
+            String result = command.execute(
+                    request.getArgs(),
+                    request.getObjectArg()
+            );
 
             if (result != null && result.startsWith("EXEC_SCRIPT:")) {
-                String fileName = result.substring("EXEC_SCRIPT:".length()).trim();
-                return executeScript(fileName);
+                String fileName =
+                        result.substring("EXEC_SCRIPT:".length()).trim();
+
+                result = executeScript(fileName);
             }
 
-            return result;
+            return new Response(result);
 
         } catch (Exception e) {
-            return "Ошибка выполнения команды: " + e.getMessage();
+            return new Response(
+                    "Ошибка выполнения команды: " + e.getMessage()
+            );
         }
     }
 
     private String executeScript(String fileName) {
-
         try {
             inputManager.pushScript(fileName);
 
@@ -55,10 +65,11 @@ public class CommandManager {
             sb.append("Скрипт ").append(fileName).append(" выполняется\n");
 
             while (inputManager.hasNext()) {
-
                 String line = inputManager.readLine();
 
-                if (line == null || line.trim().isEmpty()) continue;
+                if (line == null || line.trim().isEmpty()) {
+                    continue;
+                }
 
                 String[] parts = line.trim().split("\\s+");
                 String cmdName = parts[0];
@@ -66,9 +77,11 @@ public class CommandManager {
                 String[] args = new String[Math.max(0, parts.length - 1)];
                 System.arraycopy(parts, 1, args, 0, args.length);
 
-                String result = execute(cmdName, null, args);
+                Request request = new Request(cmdName, null, args); // TODO поменять местами и argument сделать не обжект
 
-                sb.append(result).append("\n");
+                Response response = execute(request);
+
+                sb.append(response.getMessage()).append("\n");
             }
 
             inputManager.popScript();

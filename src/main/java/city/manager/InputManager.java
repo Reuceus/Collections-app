@@ -1,5 +1,7 @@
 package city.manager;
 
+import city.model.*;
+
 import java.io.*;
 import java.util.*;
 import java.util.function.Predicate;
@@ -137,6 +139,120 @@ public class InputManager {
 
             if (isReadingFromScript()) {
                 throw new IllegalArgumentException("Ошибка в скрипте: " + errorMessage);
+            }
+        }
+    }
+
+    public City readCity() throws IOException {
+        String name = readString(
+                "Введите название города:",
+                value -> value != null && !value.trim().isEmpty(),
+                "Название города не может быть пустым"
+        );
+
+        float x = readFloat(
+                "Введите координату x (максимум 959):",
+                value -> value <= 959,
+                "x должен быть <= 959"
+        );
+
+        int y = readInt(
+                "Введите координату y (максимум 332):",
+                value -> value <= 332,
+                "y должен быть <= 332"
+        );
+
+        Coordinates coordinates = new Coordinates(x, y);
+
+        float area = readFloat(
+                "Введите площадь города (> 0):",
+                value -> value > 0,
+                "Площадь должна быть больше 0"
+        );
+
+        int population = readInt(
+                "Введите население города (> 0):",
+                value -> value > 0,
+                "Население должно быть больше 0"
+        );
+
+        double metersAboveSeaLevel = readDouble(
+                "Введите высоту над уровнем моря:",
+                value -> true,
+                "Введите корректное число"
+        );
+
+        double agglomeration = readDouble(
+                "Введите агломерацию:",
+                value -> true,
+                "Введите корректное число"
+        );
+
+        Climate climate = readClimate();
+
+        Government government = readGovernment();
+
+        int governorAge = readInt(
+                "Введите возраст губернатора (> 0):",
+                value -> value > 0,
+                "Возраст должен быть больше 0"
+        );
+
+        int governorHeight = readInt(
+                "Введите рост губернатора (> 0):",
+                value -> value > 0,
+                "Рост должен быть больше 0"
+        );
+
+        Human governor = new Human(governorAge, governorHeight);
+
+        return new City(
+                name,
+                coordinates,
+                area,
+                population,
+                metersAboveSeaLevel,
+                agglomeration,
+                climate,
+                government,
+                governor
+        );
+    }
+
+    private Climate readClimate() throws IOException {
+        while (true) {
+            System.out.println("Введите климат: " + Arrays.toString(Climate.values()));
+            String input = readLine();
+
+            try {
+                return Climate.valueOf(input.trim().toUpperCase());
+            } catch (Exception e) {
+                System.out.println("Некорректный климат");
+
+                if (isReadingFromScript()) {
+                    throw new IllegalArgumentException("Ошибка в скрипте: некорректный климат");
+                }
+            }
+        }
+    }
+
+    private Government readGovernment() throws IOException {
+        while (true) {
+            System.out.println("Введите форму правления или пустую строку для null: " + Arrays.toString(Government.values()));
+            String input = readLine();
+
+            if (input == null || input.trim().isEmpty()) {
+                return null;
+            }
+
+            try {
+                return Government.valueOf(input.trim().toUpperCase());
+            } catch (Exception e) {
+                System.out.println("Некорректная форма правления");
+
+                if (isReadingFromScript()) {
+                    throw new IllegalArgumentException("Ошибка в скрипте: некорректная форма правления");
+                }
             }
         }
     }
